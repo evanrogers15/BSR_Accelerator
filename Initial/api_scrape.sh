@@ -4,6 +4,11 @@
 read -a appneta_token <<< $appT
 read -a appneta_root_url <<< $appURL
 instance_count="${#appneta_token[@]}"
+read -a demo_data = <<< $demoData
+
+if [ "$demo_data" = "1" ]; then
+  python3 bsr_data_generator.py
+fi
 
 while true
 do

@@ -115,6 +115,7 @@ services:
       - appT=$appNeta_TOKEN
       - appURL=$appNeta_URL
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=$INFLUX_INIT_TOKEN
+      - demoData=1
     volumes:
       - ./:/config/:rw
       - api-data:/data:rw

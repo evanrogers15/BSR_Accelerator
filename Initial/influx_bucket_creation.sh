@@ -7,7 +7,7 @@ curl -s -o /data/influx/buckets.json -X GET -H "Content-type: application/json" 
 influx_org_id=($( jq -r '.orgs[].id' /data/influx/orgs.json))
 influx_org_name=($( jq -r '.orgs[].name' /data/influx/orgs.json))
 existing_buckets=($( jq -r '.buckets[].name' /data/influx/buckets.json))
-bucket=(bsr_bucket bsr_final_1m bsr_final_5m bsr_final_60m)
+bucket=(bsr_bucket bsr_final_1m bsr_final_5m bsr_final_60m demo_bsr_bucket)
 bucket_count="${#bucket[@]}"
 
 #bucket creation
