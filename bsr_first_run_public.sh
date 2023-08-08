@@ -80,6 +80,9 @@ fi
 
 # Prompt the user for the AppNeta token
 read -p "Enter the AppNeta token: " appNeta_TOKEN
+if [ -z "$appNeta_TOKEN" ]; then
+  appNeta_TOKEN="203e36e308fe4bd39adb0c053660889b"
+fi
 
 # Prompt the user for the Grafana Web Service Port
 read -p "Enter the Grafana HTTP port (default: 80): " grafana_PORT
@@ -88,9 +91,25 @@ if [ -z "$grafana_PORT" ]; then
 fi
 
 # Prompt the user for the Grafana Web Service Port
-read -p "Enter the InfluxDB HTTP port: (default: 8080)" influxDB_PORT
+read -p "Enter the InfluxDB HTTP port (default: 8080):" influxDB_PORT
 if [ -z "$influxDB_PORT" ]; then
   influxDB_PORT="8080"
+fi
+
+# Prompt the user whether or not to generate demo data
+read -p "Create demo data? (default: no):" demo_data_answer
+if [ -z "$demo_data_answer" ]; then
+  demo_data_answer="no"
+fi
+
+# Convert the user's response to lowercase for case-insensitive comparison
+demo_data_answer=$(echo "$demo_data_answer" | tr '[:upper:]' '[:lower:]')
+
+# Check if the user answered "yes" and set the demoData accordingly
+if [ "$demo_data_answer" = "yes" ]; then
+  demoData=1
+else
+  demoData=0
 fi
 
 cd $folder_name
@@ -109,13 +128,11 @@ services:
 
   api_utility:
     image: $selected_image
-    logging:
-      driver: none
     environment: #insert token generated from Appneta here
       - appT=$appNeta_TOKEN
       - appURL=$appNeta_URL
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=$INFLUX_INIT_TOKEN
-      - demoData=1
+      - demoData=$demoData
     volumes:
       - ./:/config/:rw
       - api-data:/data:rw

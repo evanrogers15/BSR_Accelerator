@@ -1,14 +1,14 @@
 #!/bin/bash
 
 read -a appneta_url <<< $appURL
-instance_count="${#appneta_url[@]}"
+instance_count="${#appneta_url[@]}" 
 read -a calc_version <<<$1
 read -a calc_version_granularity <<<$2
 read -a calc_value <<< $3
 read -a calc_agg_window <<< $4
 
 curl -s -o /data/influx/orgs.json -X GET -H "Content-type: application/json" -H "Authorization: Token $DOCKER_INFLUXDB_INIT_ADMIN_TOKEN" 'http://influxdb:8086/api/v2/orgs'
-curl -s -o /data/influx/tasks.json -X GET -H "Content-type: application/json" -H "Authorization: Token $DOCKER_INFLUXDB_INIT_ADMIN_TOKEN" 'http://influxdb:8086/api/v2/tasks'
+curl -s -o /data/influx/tasks.json -X GET -H "Content-type: application/json" -H "Authorization: Token $DOCKER_INFLUXDB_INIT_ADMIN_TOKEN" 'http://influxdb:8086/api/v2/tasks' 
 
 influx_org_id=($( jq -r '.orgs[].id' /data/influx/orgs.json))
 influx_org_name=($( jq -r '.orgs[].name' /data/influx/orgs.json))
@@ -54,7 +54,7 @@ for ((m=0; m<$instance_count; m++))
               echo -e "\nTask for Business Service "$calc_value" was not created as a task named 'app_"$calc_value"_url_"$calc_version_value"_"$calc_agg_window"m"$calc_version_granularity"' already exists.\n"
             fi
             break 3
-      else #url without milestone
+      else #url without milestone 
             if [[ ! " ${existing_tasks[@]} " =~ " app_'${calc_value}'_url_${calc_version_value}_${calc_agg_window}m_${calc_version_granularity}" ]]; then
             curl -s -o /data/influx/tasktemp.json -X 'POST' \
               "http://influxdb:8086/api/v2/tasks" \

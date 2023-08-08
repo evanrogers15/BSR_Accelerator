@@ -3,6 +3,9 @@ from datetime import datetime, timedelta
 import requests
 import time
 import os
+import json
+
+backload_real_data = 0
 
 if 'DOCKER_INFLUXDB_INIT_ADMIN_TOKEN' in os.environ:
     # Environment variable exists
@@ -13,92 +16,13 @@ else:
 
 influx_server_ip = 'influxdb.local'
 influx_server_port = '8086'
-bucket = 'demo_bsr_bucket'
 
-config = {
-    "group1": {
-        "appName": "BSR",
-        "applianceName": "AppNeta-vk35-Site-1",
-        "host": "telegraf.local",
-        "milestone": "0",
-        "userFlowName": "Open",
-        "webAppId": "19660",
-        "webPathId": "52194",
-        "webUrlTarget": "google.com",
-        "web_tag_category": "null",
-        "web_tag_value": "null",
-        "connectionType": "Wired",
-        "ispName": "Google",
-        "networkType": "WAN",
-        "pathId" : "77642",
-        "pathUrlTarget" : "google.com",
-        "path_tag_category" : "null",
-        "path_tag_value": "null",
-        "vpn" : "Inactive"
-    },
-    "group2": {
-        "appName": "Check Checking Balance",
-        "applianceName": "m70-01",
-        "host": "telegraf.local",
-        "milestone": "0",
-        "userFlowName": "check_checking_balance_workflow",
-        "webAppId": "19438",
-        "webPathId": "51603",
-        "webUrlTarget": "www.bank.com",
-        "web_tag_category": "null",
-        "web_tag_value": "null",
-        "connectionType": "Wired",
-        "ispName": "AT&T",
-        "networkType": "WAN",
-        "pathId" : "70002",
-        "pathUrlTarget" : "www.bank.com",
-        "path_tag_category" : "null",
-        "path_tag_value": "null",
-        "vpn" : "Inactive"
-    },
-    "group3": {
-        "appName": "Schedule Transfer",
-        "applianceName": "m70-01",
-        "host": "telegraf.local",
-        "milestone": "0",
-        "userFlowName": "schedule_transfer_workflow",
-        "webAppId": "19439",
-        "webPathId": "51604",
-        "webUrlTarget": "www.bank.com",
-        "web_tag_category": "null",
-        "web_tag_value": "null",
-        "connectionType": "Wired",
-        "ispName": "AT&T",
-        "networkType": "WAN",
-        "pathId" : "70003",
-        "pathUrlTarget" : "www.bank.com",
-        "path_tag_category" : "null",
-        "path_tag_value": "null",
-        "vpn" : "Inactive"
-    },
-    "group4": {
-        "appName": "Close Account",
-        "applianceName": "m70-01",
-        "host": "telegraf.local",
-        "milestone": "0",
-        "userFlowName": "close_account_workflow",
-        "webAppId": "19440",
-        "webPathId": "51605",
-        "webUrlTarget": "www.bank.com",
-        "web_tag_category": "null",
-        "web_tag_value": "null",
-        "connectionType": "Wired",
-        "ispName": "AT&T",
-        "networkType": "WAN",
-        "pathId" : "70004",
-        "pathUrlTarget" : "www.bank.com",
-        "path_tag_category" : "null",
-        "path_tag_value": "null",
-        "vpn" : "Inactive"
-    },
-}
+def read_config_file(file_path):
+    with open(file_path, "r") as f:
+        data = json.load(f)
+    return data
 
-def create_bsr_data(delta_field, delta_value, interval_field, interval_value):
+def create_bsr_data(config, delta_field, delta_value, interval_field, interval_value):
     end_time = datetime.utcnow().replace(microsecond=0)
     if delta_field == 'minutes':
         start_time = end_time - timedelta(minutes=delta_value)
@@ -125,6 +49,7 @@ def create_bsr_data(delta_field, delta_value, interval_field, interval_value):
             applianceName = group_config["applianceName"].replace(" ", "_")
             host = group_config["host"]
             milestone = group_config["milestone"]
+            milestoneName = group_config["milestoneName"]
             userFlowName = group_config["userFlowName"].replace(" ", "_")
             webAppId = group_config["webAppId"]
             webPathId = group_config["webPathId"]
@@ -132,27 +57,19 @@ def create_bsr_data(delta_field, delta_value, interval_field, interval_value):
             web_tag_category = group_config["web_tag_category"].replace(" ", "_")
             web_tag_value = group_config["web_tag_value"].replace(" ", "_")
             start_time = initial_start_time
+            statusCode = 200
 
             # generate data points for each time interval
             while end_time > start_time:
                 # generate a random value for each field at each time interval
-                value = random.randint(100, 800)
+                value1 = random.randint(100, 800)
+                value2 = random.randint(100, 800)
+                value3 = random.randint(100, 800)
+                value4 = value1 + value2 + value3
+
                 timestamp_ns = int(start_time.timestamp() * 1000000000)
-                #timestamp_ns = int(start_time.timestamp())
-                line = f'appN_exp,appName={appName},applianceName={applianceName},host={host},milestone={milestone},userFlowName={userFlowName},webAppId={webAppId},webPathId={webPathId},webUrlTarget={webUrlTarget},web_tag_category={web_tag_category},web_tag_value={web_tag_value} ' \
-                       f'browserTiming={value} {timestamp_ns}'
-                file.write(line + '\n')
-
-                value = random.randint(100, 800)
-
-                line = f'appN_exp,appName={appName},applianceName={applianceName},host={host},milestone={milestone},userFlowName={userFlowName},webAppId={webAppId},webPathId={webPathId},webUrlTarget={webUrlTarget},web_tag_category={web_tag_category},web_tag_value={web_tag_value} ' \
-                       f'networkTiming={value} {timestamp_ns}'
-                file.write(line + '\n')
-
-                value = random.randint(100, 800)
-
-                line = f'appN_exp,appName={appName},applianceName={applianceName},host={host},milestone={milestone},userFlowName={userFlowName},webAppId={webAppId},webPathId={webPathId},webUrlTarget={webUrlTarget},web_tag_category={web_tag_category},web_tag_value={web_tag_value} ' \
-                       f'serverTiming={value} {timestamp_ns}'
+                line = f'appN_exp,appName={appName},applianceName={applianceName},host={host},milestone={milestone},milestoneName={milestoneName},userFlowName={userFlowName},webAppId={webAppId},webPathId={webPathId},webUrlTarget={webUrlTarget},web_tag_category={web_tag_category},web_tag_value={web_tag_value} ' \
+                       f'browserTiming={value1},networkTiming={value2},serverTiming={value3},statusCode={statusCode},webPathStatus="OK",totalTime={value4} {timestamp_ns}'
                 file.write(line + '\n')
 
                 start_time += interval
@@ -187,7 +104,7 @@ def create_bsr_data(delta_field, delta_value, interval_field, interval_value):
                     f'appN_path,applianceName={applianceName},connectionType={connectionType},host={host},'
                     f'ispName={ispName},networkType={networkType},pathId={pathId},pathUrlTarget={pathUrlTarget},'
                     f'path_tag_category={path_tag_category},path_tag_value={path_tag_value},vpn={vpn} '
-                    f'dataJitter={data_jitter} {timestamp_ns}'
+                    f'dataJitter={data_jitter} {timestamp_ns},webPathStatus="OK"'
                 )
                 file.write(line + '\n')
 
@@ -195,7 +112,7 @@ def create_bsr_data(delta_field, delta_value, interval_field, interval_value):
                     f'appN_path,applianceName={applianceName},connectionType={connectionType},host={host},'
                     f'ispName={ispName},networkType={networkType},pathId={pathId},pathUrlTarget={pathUrlTarget},'
                     f'path_tag_category={path_tag_category},path_tag_value={path_tag_value},vpn={vpn} '
-                    f'dataLoss={data_loss} {timestamp_ns}'
+                    f'dataLoss={data_loss} {timestamp_ns},webPathStatus="OK"'
                 )
                 file.write(line + '\n')
 
@@ -203,7 +120,7 @@ def create_bsr_data(delta_field, delta_value, interval_field, interval_value):
                     f'appN_path,applianceName={applianceName},connectionType={connectionType},host={host},'
                     f'ispName={ispName},networkType={networkType},pathId={pathId},pathUrlTarget={pathUrlTarget},'
                     f'path_tag_category={path_tag_category},path_tag_value={path_tag_value},vpn={vpn} '
-                    f'latency={latency} {timestamp_ns}'
+                    f'latency={latency} {timestamp_ns},webPathStatus="OK"'
                 )
                 file.write(line + '\n')
 
@@ -211,26 +128,53 @@ def create_bsr_data(delta_field, delta_value, interval_field, interval_value):
                     f'appN_path,applianceName={applianceName},connectionType={connectionType},host={host},'
                     f'ispName={ispName},networkType={networkType},pathId={pathId},pathUrlTarget={pathUrlTarget},'
                     f'path_tag_category={path_tag_category},path_tag_value={path_tag_value},vpn={vpn} '
-                    f'rtt={rtt} {timestamp_ns}'
+                    f'rtt={rtt} {timestamp_ns},webPathStatus="OK"'
                 )
                 file.write(line + '\n')
 
                 start_time += interval
                 prev_pathId = pathId
 
-def send_data_to_influxdb(token):
+def send_data_to_influxdb(token, bucket):
     url = f"http://{influx_server_ip}:{influx_server_port}/api/v2/write?org=bsr&bucket={bucket}&precision=ns"
     headers = {
         "Authorization": f"Token {token}"
     }
     with open("bsr_data.txt", "rb") as file:
-        response = requests.post(url, headers=headers, data=file)
-        response.raise_for_status()
-print("Starting demo data creation and loading to InfluxDB")
-create_bsr_data(delta_field='days', delta_value=60, interval_field='minutes', interval_value=5)
-send_data_to_influxdb(influx_token)
+        retries = 5
+        delay = 5  # Delay in seconds between retries
+        while retries > 0:
+            try:
+                response = requests.post(url, headers=headers, data=file)
+                response.raise_for_status()
+                break  # If successful, break out of the loop
+            except requests.exceptions.RequestException as e:
+                print(f"Failed to send data to InfluxDB: {e}")
+                print(f"Retrying in {delay} seconds...")
+                time.sleep(delay)
+                retries -= 1
+        else:
+            print("Failed to send data to InfluxDB after multiple retries.")
 
-while True:
-    create_bsr_data(delta_field='minutes', delta_value=1, interval_field='seconds', interval_value=30)
-    send_data_to_influxdb(influx_token)
-    time.sleep(60)
+def delete_data_file():
+    file_path = "bsr_data.txt"
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+if __name__ == "__main__":
+    if backload_real_data == 1:
+        config_existing_tests = read_config_file("config_existing_tests.json")
+        create_bsr_data(config_existing_tests, delta_field='days', delta_value=60, interval_field='minutes', interval_value=5)
+        send_data_to_influxdb(influx_token, "bsr_bucket")
+        delete_data_file()
+
+    config_demo_tests = read_config_file("demo_config.json")
+    create_bsr_data(config_demo_tests, delta_field='days', delta_value=60, interval_field='minutes', interval_value=5)
+    send_data_to_influxdb(influx_token, "demo_bsr_bucket")
+    delete_data_file()
+
+    while True:
+        delete_data_file()
+        create_bsr_data(config_demo_tests, delta_field='minutes', delta_value=2, interval_field='seconds', interval_value=60)
+        send_data_to_influxdb(influx_token, "demo_bsr_bucket")
+        time.sleep(120)
