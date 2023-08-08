@@ -17,12 +17,12 @@ RUN if [ ! -e /usr/bin/pip ]; then ln -s /usr/bin/pip3 /usr/bin/pip; fi
 # Set the working directory
 WORKDIR /
 
-COPY initial /initial
+COPY initial/ /initial/
 
 # Make the scripts executable
 RUN chmod +x /initial/env_setup.sh && \
     chmod +x /initial/api_scrape.sh && \
-    chmod +x /initial/influx_bucket_creation
+    chmod +x /initial/influx_bucket_creation.sh
 
 # Define the default command to run when the container starts
 CMD ["/bin/bash"]
