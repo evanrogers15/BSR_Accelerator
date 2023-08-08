@@ -1,20 +1,27 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10
+# Use the official Ubuntu base image
+FROM ubuntu:latest
 
-# Set the working directory to /app
-WORKDIR /initial
+# Set environment variables to avoid prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Copy the contents of the gns3_app directory into the container
-COPY . /initial/
+# Update the package list and install necessary packages
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip curl jq && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install any dependencies specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Set up symbolic links for Python and pip if they don't exist
+RUN if [ ! -e /usr/bin/python ]; then ln -s /usr/bin/python3 /usr/bin/python; fi
+RUN if [ ! -e /usr/bin/pip ]; then ln -s /usr/bin/pip3 /usr/bin/pip; fi
 
-# Install SQLite and VIM
-RUN apt-get update && apt-get install -y sqlite3 vim
+# Set the working directory
+WORKDIR /
 
-# Setup SQLite
-RUN python modules/sqlite_setup.py
+COPY Initial /initial
 
-# Set the default command to run both Flask and Node.js
-CMD ["bash", "-c", "python -m flask run -p 8080 --host=0.0.0.0"]
+# Make the scripts executable
+RUN chmod +x /initial/env_setup.sh && \
+    chmod +x /initial/api_scrape.sh
+
+# Define the default command to run when the container starts
+CMD ["/bin/bash"]
