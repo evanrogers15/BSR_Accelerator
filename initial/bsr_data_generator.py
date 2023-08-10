@@ -152,10 +152,12 @@ if __name__ == "__main__":
     parser.add_argument("--months", type=int, help="Number of months to backfill data")
 
     args = parser.parse_args()
-    backload = args.backload
 
     if args.months:
-        backfill_length = args.months * 30
+        backfill_length = args.months
+        backfill_length *= 30
+    else:
+        backfill_length = 60
 
     if args.real:
         real = args.real
