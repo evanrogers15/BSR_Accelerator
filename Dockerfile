@@ -14,6 +14,9 @@ RUN apt-get update && \
 RUN if [ ! -e /usr/bin/python ]; then ln -s /usr/bin/python3 /usr/bin/python; fi
 RUN if [ ! -e /usr/bin/pip ]; then ln -s /usr/bin/pip3 /usr/bin/pip; fi
 
+# Install the requests library using pip
+RUN pip install requests
+
 # Set the working directory
 WORKDIR /
 
