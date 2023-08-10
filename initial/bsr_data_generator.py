@@ -4,6 +4,7 @@ import requests
 import time
 import os
 import json
+import argparse
 
 backload_real_data = 0
 
@@ -96,39 +97,21 @@ def create_bsr_data(config, delta_field, delta_value, interval_field, interval_v
                 data_loss = round(random.uniform(0.0, 0.1), 2)
                 latency = random.randint(2, 8)
                 rtt = latency * 2
+                totalCapacity = 200
+                utilizedCapacity = random.randint(70, 150)
+                availableCapacity = totalCapacity - utilizedCapacity
+
+                # totalCapacity = availableCapacity + utilizedCapacity
 
                 timestamp_ns = int(start_time.timestamp() * 1000000000)
-                #timestamp_ns = int(start_time.timestamp())
 
                 line = (
                     f'appN_path,applianceName={applianceName},connectionType={connectionType},host={host},'
                     f'ispName={ispName},networkType={networkType},pathId={pathId},pathUrlTarget={pathUrlTarget},'
                     f'path_tag_category={path_tag_category},path_tag_value={path_tag_value},vpn={vpn} '
-                    f'dataJitter={data_jitter} {timestamp_ns},webPathStatus="OK"'
-                )
-                file.write(line + '\n')
-
-                line = (
-                    f'appN_path,applianceName={applianceName},connectionType={connectionType},host={host},'
-                    f'ispName={ispName},networkType={networkType},pathId={pathId},pathUrlTarget={pathUrlTarget},'
-                    f'path_tag_category={path_tag_category},path_tag_value={path_tag_value},vpn={vpn} '
-                    f'dataLoss={data_loss} {timestamp_ns},webPathStatus="OK"'
-                )
-                file.write(line + '\n')
-
-                line = (
-                    f'appN_path,applianceName={applianceName},connectionType={connectionType},host={host},'
-                    f'ispName={ispName},networkType={networkType},pathId={pathId},pathUrlTarget={pathUrlTarget},'
-                    f'path_tag_category={path_tag_category},path_tag_value={path_tag_value},vpn={vpn} '
-                    f'latency={latency} {timestamp_ns},webPathStatus="OK"'
-                )
-                file.write(line + '\n')
-
-                line = (
-                    f'appN_path,applianceName={applianceName},connectionType={connectionType},host={host},'
-                    f'ispName={ispName},networkType={networkType},pathId={pathId},pathUrlTarget={pathUrlTarget},'
-                    f'path_tag_category={path_tag_category},path_tag_value={path_tag_value},vpn={vpn} '
-                    f'rtt={rtt} {timestamp_ns},webPathStatus="OK"'
+                    f'dataJitter={data_jitter},dataLoss={data_loss},latency={latency},rtt={rtt},'
+                    f'availableCapacity={availableCapacity},utilizedCapacity={utilizedCapacity},totalCapacity={totalCapacity},'
+                    f'pathStatus="OK" {timestamp_ns}'
                 )
                 file.write(line + '\n')
 
@@ -162,14 +145,28 @@ def delete_data_file():
         os.remove(file_path)
 
 if __name__ == "__main__":
-    if backload_real_data == 1:
-        config_existing_tests = read_config_file("config_existing_tests.json")
-        create_bsr_data(config_existing_tests, delta_field='days', delta_value=60, interval_field='minutes', interval_value=5)
-        send_data_to_influxdb(influx_token, "bsr_bucket")
-        delete_data_file()
+    parser = argparse.ArgumentParser(
+        description="Script will backfill raw data into InfluxDB")
+
+    parser.add_argument("--real", choices=['y', 'n'], help="Backfill existing AppNeta tests")
+    parser.add_argument("--months", type=int, help="Number of months to backfill data")
+
+    args = parser.parse_args()
+    backload = args.backload
+
+    if args.months:
+        backfill_length = args.months * 30
+
+    if args.real:
+        real = args.real
+        if real == 'y':
+            config_existing_tests = read_config_file("config_existing_tests.json")
+            create_bsr_data(config_existing_tests, delta_field='days', delta_value=backfill_length, interval_field='minutes', interval_value=5)
+            send_data_to_influxdb(influx_token, "bsr_bucket")
+            delete_data_file()
 
     config_demo_tests = read_config_file("demo_config.json")
-    create_bsr_data(config_demo_tests, delta_field='days', delta_value=60, interval_field='minutes', interval_value=5)
+    create_bsr_data(config_demo_tests, delta_field='days', delta_value=backfill_length, interval_field='minutes', interval_value=5)
     send_data_to_influxdb(influx_token, "demo_bsr_bucket")
     delete_data_file()
 

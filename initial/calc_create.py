@@ -1,6 +1,7 @@
 import requests
 import time
 import os
+import argparse
 
 def generate_flux_script_url(name, every_value, every_unit, final_bucket, target, historic_range_value, historic_range_unit):
     flux_script = f'''
@@ -84,23 +85,24 @@ def generate_flux_script_url(name, every_value, every_unit, final_bucket, target
     '''
     return flux_script
 
-def generate_flux_script_tag(name, every_value, every_unit, final_bucket, tag_value, historic_range_value, historic_range_unit):
+def generate_flux_script_tag(name, every_value, every_unit, raw_bucket, final_bucket, tag_category, tag_value, historic_range_value, historic_range_unit):
     flux_script = f'''
     option task = {{name: "{name}", every: {every_value}{every_unit}}}
 
-    raw_bucket = "bsr_bucket"
+    raw_bucket = "{raw_bucket}"
     final_bucket = "{final_bucket}"
-    tag = "{tag_value}"
+    tag_category = "{tag_category}"
+    tag_value = "{tag_value}"
     webApp =
-        from(bucket: "bsr_bucket")
+        from(bucket: raw_bucket)
             |> range(start: -{historic_range_value}{historic_range_unit})
-            |> filter(fn: (r) => r["web_tag_value"] == tag and r["web_tag_category"] == "bsr")
+            |> filter(fn: (r) => r["web_tag_category"] == tag_category and r["web_tag_value"] == tag_value)
             |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
 
     pathStats =
-        from(bucket: "bsr_bucket")
+        from(bucket: raw_bucket)
             |> range(start: -{historic_range_value}{historic_range_unit})
-            |> filter(fn: (r) => r["path_tag_value"] == tag and r["path_tag_category"] == "bsr")
+            |> filter(fn: (r) => r["path_tag_category"] == tag_category and r["path_tag_value"] == tag_value)
             |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
 
     finalBSR_table =
@@ -188,7 +190,7 @@ def start_task(task_id):
     url = f"{influxdb_url}/api/v2/tasks/{task_id}/runs"
     response = requests.post(url, headers=headers)
 
-    if response.status_code == 200:
+    if response.status_code == 201:
         run_id = response.json()["id"]
         print(f"Task ID {task_id} started successfully. Run ID: {run_id}")
     else:
@@ -215,8 +217,8 @@ def get_orgs():
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
-        orgs = response.json()
-        for org in orgs:
+        orgs_data = response.json()["orgs"]  # Access the 'orgs' list
+        for org in orgs_data:
             if org["name"] == "bsr":
                 return org["id"]
         return None  # Organization not found
@@ -249,36 +251,56 @@ def delete_task(task_id):
 
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser(description="Script will create InfluxDB Tasks used to create BSR perfection score data")
+
+    parser.add_argument("--name", required=True, help="InfluxDB Task Name")
+    parser.add_argument("--tag_category", required=True, help="Value for Tag Category")
+    parser.add_argument("--tag_value", required=True, help="Value for Tag Value")
+    parser.add_argument("--backload", required=True, choices=['y', 'n'], help="Process historical raw data")
+    parser.add_argument("--days", type=int, required=lambda ns: ns.backload == 'y',
+                        help="Number of days for backload (required if backload is 'y')")
+    parser.add_argument("--initial_bucket", required=True, help="Value for raw data bucket")
+    parser.add_argument("--final_bucket", required=True, help="Value for final BSR bucket")
+
+    args = parser.parse_args()
+
     if 'DOCKER_INFLUXDB_INIT_ADMIN_TOKEN' in os.environ:
-        # Environment variable exists
-        var_value = os.environ['DOCKER_INFLUXDB_INIT_ADMIN_TOKEN']
-        influxdb_token = var_value
+        influxdb_token = os.environ['DOCKER_INFLUXDB_INIT_ADMIN_TOKEN']
     else:
         print("Environment variable not found")
+        exit(1)
 
     influxdb_url = "http://influxdb:8086"
     headers = {
         "Authorization": f"Token {influxdb_token}", "Content-Type": "application/json",
     }
+
     org_id = get_orgs()
-    name_value = "tixchange"
-    tag_value = "tixchange"
-    final_bucket_value = "demo_bsr_final"
-    # target_value = "google.com"
-    e_value = "30"
-    e_unit = "d"
-    h_r_value = "60"
-    h_r_unit = "d"
-    flux_script = generate_flux_script_tag(name_value, e_value, e_unit, final_bucket_value, tag_value, h_r_value, h_r_unit)
-    task_id = send_tasks(flux_script, name_value)
-    start_task(task_id)
-    wait_for_task_success(task_id)
-    delete_task(task_id)
+
+    name_value = args.name
+    tag_category = args.tag_category
+    tag_value = args.tag_value
+    backload = args.backload
+    h_r_value = args.days
+    raw_bucket_value = args.initial_bucket
+    final_bucket_value = args.final_bucket
+
+    if backload == 'y':
+        e_value = "30"
+        e_unit = "d"
+        # h_r_value = "60"
+        h_r_unit = "d"
+        flux_script = generate_flux_script_tag(name_value, e_value, e_unit, raw_bucket_value, final_bucket_value, tag_category, tag_value, h_r_value, h_r_unit)
+        task_id = send_tasks(flux_script, name_value, org_id)
+        start_task(task_id)
+        #time.sleep(5)
+        wait_for_task_success(task_id)
+        delete_task(task_id)
 
     e_value = "1"
     e_unit = "m"
     h_r_value = "60"
     h_r_unit = "m"
-    flux_script = generate_flux_script_tag(name_value, e_value, e_unit, final_bucket_value, tag_value, h_r_value, h_r_unit)
-    task_id = send_tasks(flux_script, name_value)
+    flux_script = generate_flux_script_tag(name_value, e_value, e_unit, raw_bucket_value, final_bucket_value, tag_category, tag_value, h_r_value, h_r_unit)
+    task_id = send_tasks(flux_script, name_value, org_id)
     start_task(task_id)
