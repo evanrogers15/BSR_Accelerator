@@ -6,8 +6,6 @@ import os
 import json
 import argparse
 
-backload_real_data = 0
-
 if 'DOCKER_INFLUXDB_INIT_ADMIN_TOKEN' in os.environ:
     # Environment variable exists
     var_value = os.environ['DOCKER_INFLUXDB_INIT_ADMIN_TOKEN']

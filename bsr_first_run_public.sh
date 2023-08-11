@@ -71,17 +71,24 @@ selected_image=$(echo "$image_tags" | sed -n "${index}p")
 # Set the selected image as the value of the 'selected_image' variable
 selected_image="$repository:$selected_image"
 
-# Prompt the user for the AppNeta URL
-read -p "Enter the AppNeta URL (default: app-01.pm.appneta.com): " appNeta_URL
-
-if [ -z "$appNeta_URL" ]; then
-  appNeta_URL="app-01.pm.appneta.com"
+# Prompt the user whether or not to generate demo data
+read -p "Demo data only? (default: no):" demo_data_answer
+if [ -z "$demo_data_answer" ]; then
+  demo_data_answer="no"
 fi
 
-# Prompt the user for the AppNeta token
-read -p "Enter the AppNeta token: " appNeta_TOKEN
-if [ -z "$appNeta_TOKEN" ]; then
-  appNeta_TOKEN="none"
+if [ "$demo_data_answer" != "no" ]; then
+    # Prompt the user for the AppNeta URL
+    read -p "Enter the AppNeta URL (default: app-01.pm.appneta.com): " appNeta_URL
+    if [ -z "$appNeta_URL" ]; then
+      appNeta_URL="app-01.pm.appneta.com"
+    fi
+
+    # Prompt the user for the AppNeta token
+    read -p "Enter the AppNeta token: " appNeta_TOKEN
+    if [ -z "$appNeta_TOKEN" ]; then
+      appNeta_TOKEN="none"
+    fi
 fi
 
 # Prompt the user for the Grafana Web Service Port
@@ -96,21 +103,8 @@ if [ -z "$influxDB_PORT" ]; then
   influxDB_PORT="8080"
 fi
 
-# Prompt the user whether or not to generate demo data
-read -p "Create demo data? (default: no):" demo_data_answer
-if [ -z "$demo_data_answer" ]; then
-  demo_data_answer="no"
-fi
-
 # Convert the user's response to lowercase for case-insensitive comparison
 demo_data_answer=$(echo "$demo_data_answer" | tr '[:upper:]' '[:lower:]')
-
-# Check if the user answered "yes" and set the demoData accordingly
-if [ "$demo_data_answer" = "yes" ]; then
-  demoData=1
-else
-  demoData=0
-fi
 
 cd $folder_name
 

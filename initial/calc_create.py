@@ -280,22 +280,9 @@ def main():
     tag_category = args.tag_category
     tag_value = args.tag_value
     backload = args.backload
-    h_r_value = args.days
+    backload_h_r_value = args.days
     raw_bucket_value = args.initial_bucket
     final_bucket_value = args.final_bucket
-
-    if backload == 'y':
-        e_value = "30"
-        e_unit = "d"
-        # h_r_value = "60"
-        h_r_unit = "d"
-        flux_script = generate_flux_script_tag(name_value, e_value, e_unit, raw_bucket_value, final_bucket_value,
-                                               tag_category, tag_value, h_r_value, h_r_unit)
-        task_id = send_tasks(flux_script, name_value, org_id)
-        start_task(task_id)
-        # time.sleep(5)
-        wait_for_task_success(task_id)
-        delete_task(task_id)
 
     e_value = "1"
     e_unit = "m"
@@ -305,6 +292,17 @@ def main():
                                            tag_category, tag_value, h_r_value, h_r_unit)
     task_id = send_tasks(flux_script, name_value, org_id)
     start_task(task_id)
+
+    if backload == 'y':
+        e_value = "30"
+        e_unit = "d"
+        h_r_unit = "d"
+        flux_script = generate_flux_script_tag(name_value, e_value, e_unit, raw_bucket_value, final_bucket_value,
+                                               tag_category, tag_value, backload_h_r_value, h_r_unit)
+        task_id = send_tasks(flux_script, name_value, org_id)
+        start_task(task_id)
+        wait_for_task_success(task_id)
+        delete_task(task_id)
 
 if __name__ == "__main__":
     main()
