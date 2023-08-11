@@ -77,7 +77,7 @@ if [ -z "$demo_data_answer" ]; then
   demo_data_answer="no"
 fi
 
-if [ "$demo_data_answer" != "no" ]; then
+if [ "$demo_data_answer" == "no" ]; then
     # Prompt the user for the AppNeta URL
     read -p "Enter the AppNeta URL (default: app-01.pm.appneta.com): " appNeta_URL
     if [ -z "$appNeta_URL" ]; then

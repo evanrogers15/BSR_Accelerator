@@ -9,13 +9,13 @@ read -a demo_data <<< $demoData
 bash /initial/influx_bucket_creation.sh
 if [ "$demo_data" = "yes" ]; then
   python3 /initial/bsr_data_generator.py &
-  python3 initial/calc_create.py --name tixchange --tag_category bsr --tag_value banking_savings --backload y --days 60 --initial_bucket demo_bsr_bucket --final_bucket demo_bsr_final
-  python3 initial/calc_create.py --name tixchange --tag_category bsr --tag_value banking_create_checking --backload y --days 60 --initial_bucket demo_bsr_bucket --final_bucket demo_bsr_final
-  python3 initial/calc_create.py --name tixchange --tag_category bsr --tag_value banking_pay_bills --backload y --days 60 --initial_bucket demo_bsr_bucket --final_bucket demo_bsr_final
-  python3 initial/calc_create.py --name tixchange --tag_category bsr --tag_value banking_transfer --backload y --days 60 --initial_bucket demo_bsr_bucket --final_bucket demo_bsr_final
+  python3 /initial/calc_create.py --name tixchange --tag_category bsr --tag_value banking_savings --backload y --days 60 --initial_bucket demo_bsr_bucket --final_bucket demo_bsr_final
+  python3 /initial/calc_create.py --name tixchange --tag_category bsr --tag_value banking_create_checking --backload y --days 60 --initial_bucket demo_bsr_bucket --final_bucket demo_bsr_final
+  python3 /initial/calc_create.py --name tixchange --tag_category bsr --tag_value banking_pay_bills --backload y --days 60 --initial_bucket demo_bsr_bucket --final_bucket demo_bsr_final
+  python3 /initial/calc_create.py --name tixchange --tag_category bsr --tag_value banking_transfer --backload y --days 60 --initial_bucket demo_bsr_bucket --final_bucket demo_bsr_final
 fi
 
-if [ "$variable" != "none" ]; then
+if [ "$appneta_token" != "none" ]; then
   while true
   do
       for ((l=0; l<$instance_count; l++))
