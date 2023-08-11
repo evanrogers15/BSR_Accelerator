@@ -49,10 +49,12 @@ def get_user_input():
 
     return all_apps_data
 
-
-if __name__ == "__main__":
+def main():
     config_existing_tests = get_user_input()
 
     # Output the dictionary to a new file named "config_demo_tests.json"
     with open("config_existing_tests.json", "w") as f:
         json.dump(config_existing_tests, f, indent=4)
+
+if __name__ == "__main__":
+    main()

@@ -248,10 +248,9 @@ def delete_task(task_id):
     else:
         print(f"Failed to delete Task ID {task_id}. Status code: {response.status_code}, Error: {response.text}")
 
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description="Script will create InfluxDB Tasks used to create BSR perfection score data")
+def main():
+    parser = argparse.ArgumentParser(
+        description="Script will create InfluxDB Tasks used to create BSR perfection score data")
 
     parser.add_argument("--name", required=True, help="InfluxDB Task Name")
     parser.add_argument("--tag_category", required=True, help="Value for Tag Category")
@@ -290,10 +289,11 @@ if __name__ == "__main__":
         e_unit = "d"
         # h_r_value = "60"
         h_r_unit = "d"
-        flux_script = generate_flux_script_tag(name_value, e_value, e_unit, raw_bucket_value, final_bucket_value, tag_category, tag_value, h_r_value, h_r_unit)
+        flux_script = generate_flux_script_tag(name_value, e_value, e_unit, raw_bucket_value, final_bucket_value,
+                                               tag_category, tag_value, h_r_value, h_r_unit)
         task_id = send_tasks(flux_script, name_value, org_id)
         start_task(task_id)
-        #time.sleep(5)
+        # time.sleep(5)
         wait_for_task_success(task_id)
         delete_task(task_id)
 
@@ -301,6 +301,10 @@ if __name__ == "__main__":
     e_unit = "m"
     h_r_value = "60"
     h_r_unit = "m"
-    flux_script = generate_flux_script_tag(name_value, e_value, e_unit, raw_bucket_value, final_bucket_value, tag_category, tag_value, h_r_value, h_r_unit)
+    flux_script = generate_flux_script_tag(name_value, e_value, e_unit, raw_bucket_value, final_bucket_value,
+                                           tag_category, tag_value, h_r_value, h_r_unit)
     task_id = send_tasks(flux_script, name_value, org_id)
     start_task(task_id)
+
+if __name__ == "__main__":
+    main()

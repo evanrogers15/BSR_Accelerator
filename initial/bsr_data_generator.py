@@ -144,7 +144,7 @@ def delete_data_file():
     if os.path.exists(file_path):
         os.remove(file_path)
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         description="Script will backfill raw data into InfluxDB")
 
@@ -177,3 +177,6 @@ if __name__ == "__main__":
         create_bsr_data(config_demo_tests, delta_field='minutes', delta_value=2, interval_field='seconds', interval_value=60)
         send_data_to_influxdb(influx_token, "demo_bsr_bucket")
         time.sleep(120)
+
+if __name__ == "__main__":
+    main()
