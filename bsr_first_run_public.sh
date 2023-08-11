@@ -81,7 +81,7 @@ fi
 # Prompt the user for the AppNeta token
 read -p "Enter the AppNeta token: " appNeta_TOKEN
 if [ -z "$appNeta_TOKEN" ]; then
-  appNeta_TOKEN="203e36e308fe4bd39adb0c053660889b"
+  appNeta_TOKEN="none"
 fi
 
 # Prompt the user for the Grafana Web Service Port
@@ -218,7 +218,16 @@ services:
 EOF
 
 # Run the Docker Compose file
-docker compose up -d
+if command -v docker-compose &>/dev/null; then
+    DOCKER_COMPOSE_COMMAND="docker-compose"
+elif command -v docker_compose &>/dev/null; then
+    DOCKER_COMPOSE_COMMAND="docker_compose"
+else
+    echo "Docker Compose not found. Please install Docker Compose."
+    exit 1
+fi
+
+$DOCKER_COMPOSE_COMMAND up -d
 
 unset INFLUX_INIT_TOKEN
 unset appNeta_URL
