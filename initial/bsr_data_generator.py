@@ -153,6 +153,9 @@ def main():
 
     args = parser.parse_args()
 
+    demo_data_config_file = "initial/demo_config.json"
+    existing_tests_config_file = "initial/config_existing_test.json"
+
     if args.months:
         backfill_length = args.months
         backfill_length *= 30
@@ -162,12 +165,12 @@ def main():
     if args.real:
         real = args.real
         if real == 'y':
-            config_existing_tests = read_config_file("config_existing_tests.json")
+            config_existing_tests = read_config_file(existing_tests_config_file)
             create_bsr_data(config_existing_tests, delta_field='days', delta_value=backfill_length, interval_field='minutes', interval_value=5)
             send_data_to_influxdb(influx_token, "bsr_bucket")
             delete_data_file()
 
-    config_demo_tests = read_config_file("demo_config.json")
+    config_demo_tests = read_config_file(demo_data_config_file)
     create_bsr_data(config_demo_tests, delta_field='days', delta_value=backfill_length, interval_field='minutes', interval_value=5)
     send_data_to_influxdb(influx_token, "demo_bsr_bucket")
     delete_data_file()

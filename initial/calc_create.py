@@ -3,6 +3,17 @@ import time
 import os
 import argparse
 
+if 'DOCKER_INFLUXDB_INIT_ADMIN_TOKEN' in os.environ:
+    influxdb_token = os.environ['DOCKER_INFLUXDB_INIT_ADMIN_TOKEN']
+else:
+    print("Environment variable not found")
+    exit(1)
+
+influxdb_url = "http://influxdb:8086"
+headers = {
+    "Authorization": f"Token {influxdb_token}", "Content-Type": "application/json",
+}
+
 def generate_flux_script_url(name, every_value, every_unit, final_bucket, target, historic_range_value, historic_range_unit):
     flux_script = f'''
     option task = {{name: "{name}", every: {every_value}{every_unit}}}
@@ -262,17 +273,6 @@ def main():
     parser.add_argument("--final_bucket", required=True, help="Value for final BSR bucket")
 
     args = parser.parse_args()
-
-    if 'DOCKER_INFLUXDB_INIT_ADMIN_TOKEN' in os.environ:
-        influxdb_token = os.environ['DOCKER_INFLUXDB_INIT_ADMIN_TOKEN']
-    else:
-        print("Environment variable not found")
-        exit(1)
-
-    influxdb_url = "http://influxdb:8086"
-    headers = {
-        "Authorization": f"Token {influxdb_token}", "Content-Type": "application/json",
-    }
 
     org_id = get_orgs()
 
