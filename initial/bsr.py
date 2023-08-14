@@ -176,46 +176,44 @@ def main():
     else:
         print("Environment variable not found")
 
-    if demo_data == 'no':
-        sys.exit()
+    if demo_data == 'yes':
+        org_id = get_orgs()
+        create_buckets(org_id, bucket)
 
-    org_id = get_orgs()
-    create_buckets(org_id, bucket)
+        print("Starting continous data creation..")
+        # background_demo_data = threading.Thread(target=bsr_demo_create_continous_data(influxdb_token))
+        # background_demo_data.start()
 
-    print("Starting continous data creation..")
-    # background_demo_data = threading.Thread(target=bsr_demo_create_continous_data(influxdb_token))
-    # background_demo_data.start()
+        thread = threading.Thread(target=bsr_demo_create_continous_data, args=(influxdb_token,))
+        thread.start()
 
-    thread = threading.Thread(target=bsr_demo_create_continous_data, args=(influxdb_token,))
-    thread.start()
+        print("Creating and sending backfill data..")
+        bsr_demo_send_backfill_data(influxdb_token, 60)
 
-    print("Creating and sending backfill data..")
-    bsr_demo_send_backfill_data(influxdb_token, 60)
+        raw_bucket = "demo_bsr_bucket"
+        final_bucket = "demo_bsr_final"
 
-    raw_bucket = "demo_bsr_bucket"
-    final_bucket = "demo_bsr_final"
+        print("Starting InfluxDB calculation creation..")
+        bsr_send_flux_task_continous(org_id=org_id, name_value="banking_savings", raw_bucket_value=raw_bucket,
+                           final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_savings")
+        bsr_send_flux_task_continous(org_id=org_id, name_value="banking_create_checking", raw_bucket_value=raw_bucket,
+                           final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_create_checking")
+        bsr_send_flux_task_continous(org_id=org_id, name_value="banking_pay_bills", raw_bucket_value=raw_bucket,
+                           final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_pay_bills")
+        bsr_send_flux_task_continous(org_id=org_id, name_value="banking_transfer", raw_bucket_value=raw_bucket,
+                           final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_transfer")
 
-    print("Starting InfluxDB calculation creation..")
-    bsr_send_flux_task_continous(org_id=org_id, name_value="banking_savings", raw_bucket_value=raw_bucket,
-                       final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_savings")
-    bsr_send_flux_task_continous(org_id=org_id, name_value="banking_create_checking", raw_bucket_value=raw_bucket,
-                       final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_create_checking")
-    bsr_send_flux_task_continous(org_id=org_id, name_value="banking_pay_bills", raw_bucket_value=raw_bucket,
-                       final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_pay_bills")
-    bsr_send_flux_task_continous(org_id=org_id, name_value="banking_transfer", raw_bucket_value=raw_bucket,
-                       final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_transfer")
-
-    bsr_send_calculation_backfill(org_id=org_id, name_value="banking_savings", raw_bucket_value=raw_bucket,
-                                 final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_savings", backload_h_r_value=60)
-    bsr_send_calculation_backfill(org_id=org_id, name_value="banking_create_checking", raw_bucket_value=raw_bucket,
-                                  final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_create_checking",
-                                  backload_h_r_value=60)
-    bsr_send_calculation_backfill(org_id=org_id, name_value="banking_pay_bills", raw_bucket_value=raw_bucket,
-                                  final_bucket_value=final_bucket, tag_category="bsr",
-                                  tag_value="banking_pay_bills", backload_h_r_value=60)
-    bsr_send_calculation_backfill(org_id=org_id, name_value="banking_transfer", raw_bucket_value=raw_bucket,
-                                  final_bucket_value=final_bucket, tag_category="bsr",
-                                  tag_value="banking_transfer", backload_h_r_value=60)
+        bsr_send_calculation_backfill(org_id=org_id, name_value="banking_savings", raw_bucket_value=raw_bucket,
+                                     final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_savings", backload_h_r_value=60)
+        bsr_send_calculation_backfill(org_id=org_id, name_value="banking_create_checking", raw_bucket_value=raw_bucket,
+                                      final_bucket_value=final_bucket, tag_category="bsr", tag_value="banking_create_checking",
+                                      backload_h_r_value=60)
+        bsr_send_calculation_backfill(org_id=org_id, name_value="banking_pay_bills", raw_bucket_value=raw_bucket,
+                                      final_bucket_value=final_bucket, tag_category="bsr",
+                                      tag_value="banking_pay_bills", backload_h_r_value=60)
+        bsr_send_calculation_backfill(org_id=org_id, name_value="banking_transfer", raw_bucket_value=raw_bucket,
+                                      final_bucket_value=final_bucket, tag_category="bsr",
+                                      tag_value="banking_transfer", backload_h_r_value=60)
 
 
 if __name__ == "__main__":
