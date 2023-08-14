@@ -1,10 +1,30 @@
 #!/bin/bash
 
 #process to pull performance metrics from Appneta API continuously
-read -a appneta_token <<< $appT
-read -a appneta_root_url <<< $appURL
+
+# Read appneta_token array if appT has a value
+if [ -n "$appT" ]; then
+    read -a appneta_token <<< "$appT"
+else
+    appneta_token=()
+fi
+
+# Read appneta_root_url array if appURL has a value
+if [ -n "$appURL" ]; then
+    read -a appneta_root_url <<< "$appURL"
+else
+    appneta_root_url=()
+fi
+
+# Read demo_data array if demoData has a value
+if [ -n "$demoData" ]; then
+    read -a demo_data <<< "$demoData"
+else
+    demo_data=()
+fi
+
 instance_count="${#appneta_token[@]}"
-read -a demo_data <<< $demoData
+
 
 bash /initial/influx_bucket_creation.sh
 if [ "$demo_data" = "yes" ]; then

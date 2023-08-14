@@ -7,7 +7,7 @@ INFLUX_INIT_TOKEN=$(openssl rand -base64 64 | tr -d '\n')
 repository="evanrogers719/bsr_utility"
 
 # Query Docker Hub for the list of images in the repository
-image_tags=$(curl -s "https://hub.docker.com/v2/repositories/$repository/tags" | jq -r '.results|.[]|.name')
+image_tags=$(curl -s "https://hub.docker.com/v2/repositories/$repository/tags" | jq -r '.results | .[].name' | head -n 5)
 
 # User entry for folder name created for use by BSR Utility
 while true; do
@@ -85,10 +85,8 @@ if [ "$demo_data_answer" == "no" ]; then
     fi
 
     # Prompt the user for the AppNeta token
-    read -p "Enter the AppNeta token: " appNeta_TOKEN
-    if [ -z "$appNeta_TOKEN" ]; then
-      appNeta_TOKEN="none"
-    fi
+    read -p "Enter the AppNeta token (default: none): " appNeta_TOKEN
+    appNeta_TOKEN="${appNeta_TOKEN:-none}"
 fi
 
 # Prompt the user for the Grafana Web Service Port
@@ -214,8 +212,8 @@ EOF
 # Run the Docker Compose file
 if command -v docker-compose &>/dev/null; then
     DOCKER_COMPOSE_COMMAND="docker-compose"
-elif command -v docker_compose &>/dev/null; then
-    DOCKER_COMPOSE_COMMAND="docker_compose"
+elif command -v "docker" &>/dev/null && docker compose --help &>/dev/null; then
+    DOCKER_COMPOSE_COMMAND="docker compose"
 else
     echo "Docker Compose not found. Please install Docker Compose."
     exit 1
