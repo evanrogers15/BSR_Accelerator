@@ -176,8 +176,11 @@ def main():
     create_buckets(org_id, bucket)
 
     print("Starting continous data creation..")
-    background_demo_data = threading.Thread(target=bsr_demo_create_continous_data(influxdb_token))
-    background_demo_data.start()
+    # background_demo_data = threading.Thread(target=bsr_demo_create_continous_data(influxdb_token))
+    # background_demo_data.start()
+
+    thread = threading.Thread(target=bsr_demo_create_continous_data, args=(influxdb_token,))
+    thread.start()
 
     print("Creating and sending backfill data..")
     bsr_demo_send_backfill_data(influxdb_token, 60)
