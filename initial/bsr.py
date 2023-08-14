@@ -4,6 +4,7 @@ from modules.influx import *
 from modules.utility import *
 import argparse
 import os
+import sys
 import threading
 
 import os
@@ -11,6 +12,8 @@ import shutil
 
 demo_data_config_file = "/initial/demo_config.json"
 existing_tests_config_file = "/initial/config_existing_test.json"
+
+demo_data = os.environ.get('demoData', 'no')
 
 def create_bsr_data(config, data_file_name, delta_field, delta_value, interval_field, interval_value):
     end_time = datetime.utcnow().replace(microsecond=0)
@@ -155,6 +158,8 @@ def bsr_send_calculation_backfill(org_id, name_value, raw_bucket_value, final_bu
     delete_task(task_id)
 
 def main():
+    if demo_data == 'no':
+        sys.exit()
     # Create directories
     os.makedirs('/data/influx', exist_ok=True)  # Create /data/influx if it doesn't exist
 
