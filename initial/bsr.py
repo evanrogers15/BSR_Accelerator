@@ -158,8 +158,7 @@ def bsr_send_calculation_backfill(org_id, name_value, raw_bucket_value, final_bu
     delete_task(task_id)
 
 def main():
-    if demo_data == 'no':
-        sys.exit()
+
     # Create directories
     os.makedirs('/data/influx', exist_ok=True)  # Create /data/influx if it doesn't exist
 
@@ -176,6 +175,9 @@ def main():
         influxdb_token = var_value
     else:
         print("Environment variable not found")
+
+    if demo_data == 'no':
+        sys.exit()
 
     org_id = get_orgs()
     create_buckets(org_id, bucket)
