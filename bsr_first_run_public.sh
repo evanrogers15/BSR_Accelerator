@@ -128,7 +128,7 @@ services:
     volumes:
       - ./:/config/:rw
       - api-data:/data:rw
-    command: bash -c "./initial/env_setup.sh && bash"
+    command: bash -c "python3 /initial/bsr.py && bash"
     hostname: api_utility.local
     networks:
       - back-tier

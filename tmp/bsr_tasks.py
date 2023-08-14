@@ -2,8 +2,8 @@ import random
 from datetime import datetime, timedelta
 import time
 
-from utility import delete_data_file, read_config_file
-from influx import send_data_to_influxdb, generate_flux_script_tag, send_tasks, start_task, wait_for_task_success, delete_task
+from modules.utility import delete_data_file, read_config_file
+from modules.influx import send_data_to_influxdb, generate_flux_script_tag, send_tasks, start_task, wait_for_task_success, delete_task
 
 demo_data_config_file = "/initial/demo_config.json"
 existing_tests_config_file = "/initial/config_existing_test.json"
