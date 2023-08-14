@@ -124,11 +124,11 @@ services:
       - appT=$appNeta_TOKEN
       - appURL=$appNeta_URL
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=$INFLUX_INIT_TOKEN
-      - demoData=$demoData
+      - demoData=$demo_data_answer
     volumes:
       - ./:/config/:rw
       - api-data:/data:rw
-    command: bash -c "./initial/env_setup.sh && ./initial/api_scrape.sh"
+    command: bash -c "python3 /initial/bsr.py && bash"
     hostname: api_utility.local
     networks:
       - back-tier
