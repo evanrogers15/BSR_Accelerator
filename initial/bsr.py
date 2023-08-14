@@ -176,7 +176,7 @@ def main():
     create_buckets(org_id, bucket)
 
     print("Starting continous data creation..")
-    background_demo_data = multiprocessing.Process(target=bsr_demo_create_continous_data(influxdb_token))
+    background_demo_data = threading.Thread(target=bsr_demo_create_continous_data(influxdb_token))
     background_demo_data.start()
 
     print("Creating and sending backfill data..")
