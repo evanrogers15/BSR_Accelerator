@@ -128,7 +128,7 @@ services:
     volumes:
       - ./:/config/:rw
       - api-data:/data:rw
-    command: bash -c "./initial/api_scrape.sh & python3 /initial/bsr.py && bash"
+    command: bash -c "./initial/api_scrape.sh & python3 /initial/bsr.py & bash"
     hostname: api_utility.local
     networks:
       - back-tier
