@@ -32,7 +32,26 @@ def get_orgs():
         print(f"Failed to retrieve organizations. Status code: {response.status_code}")
         return None
 
+def task_exists(task_name, org_id):
+    url = f"http://{influx_server_ip}:{influx_server_port}/api/v2/tasks?orgID={org_id}"
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        tasks = response.json().get('tasks', [])
+        for task in tasks:
+            if task.get('name') == task_name:
+                return True
+    else:
+        print(f"Failed to fetch tasks. Status code: {response.status_code}, Error: {response.text}")
+
+    return False
+
 def send_tasks(task_script, task_name, org_id):
+    # Check if task already exists
+    if task_exists(task_name, org_id):
+        print(f"Task '{task_name}' already exists in InfluxDB. Skipping creation.")
+        return
+
     data = {
         "name": task_name, "every": "1m", "orgID": org_id, "org": "bsr",
         # Define the task's schedule here or use option_task["every"] to use the value from the option task

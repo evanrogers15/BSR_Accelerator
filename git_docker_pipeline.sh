@@ -31,20 +31,20 @@ fi
 stop_existing_container
 
 # Check if the bsr_accelerator directory exists in the current directory
-if [ -d "bsr_accelerator" ]; then
-    rm -rf bsr_accelerator
+if [ -d "BSR_Accelerator" ]; then
+    rm -rf BSR_Accelerator
 fi
 
 # Check if the bsr_accelerator directory exists in the parent directory
-if [ -d "../bsr_accelerator" ]; then
-    rm -rf ../bsr_accelerator
+if [ -d "../BSR_Accelerator" ]; then
+    rm -rf ../BSR_Accelerator
 fi
 
 # Clone the git project with the specified branch
 git clone https://github.com/evanrogers15/BSR_Accelerator.git
 
 # Navigate to the bsr_accelerator directory
-cd bsr_accelerator
+cd BSR_Accelerator
 
 # Build the Docker container with the test tag
 docker build -t evanrogers719/bsr_accelerator:test .
