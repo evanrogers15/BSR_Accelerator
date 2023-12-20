@@ -83,7 +83,6 @@ if [ "$demo_data_answer" == "no" ]; then
     if [ -z "$appNeta_URL" ]; then
       appNeta_URL="app-01.pm.appneta.com"
     fi
-    echo "2fa540be32054d20b1310c3123f72c18"
     # Prompt the user for the AppNeta token
     read -p "Enter the AppNeta token (default: none): " appNeta_TOKEN
     appNeta_TOKEN="${appNeta_TOKEN:-none}"
@@ -128,7 +127,7 @@ services:
     volumes:
       - ./:/config/:rw
       - api-data:/data:rw
-    command: bash -c "./initial/api_scrape.sh & python3 /initial/bsr.py & bash"
+    command: python3 /initial/bsr.py
     hostname: api_utility.local
     networks:
       - back-tier
